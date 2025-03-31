@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include <queue>
+#include  <algorithm>
 
 // Binary Search Tree Node
 class Node {
@@ -125,36 +126,93 @@ private:
     Node* root;
 
     int height(Node* node) {
+        if (node == nullptr) return 0;
         // TODO: Implement height calculation
-        return 0;
+        return node->height;
     }
 
     int getBalance(Node* node) {
         // TODO: Implement balance factor calculation
-        return 0;
+        if (node == nullptr) return 0;
+        return height(node->left) - height(node->right);
     }
 
     Node* rightRotate(Node* y) {
         // TODO: Implement right rotation
-        return nullptr;
+        //rotation
+        Node* temp = y;
+        y = y->left;
+        temp->left = y->right;
+        y->right = temp;
+        //update height
+        y->right->height = 1 + std::max(height(y->right->left), 
+                    height(y->right->right)); 
+        y->height = 1 + std::max(height(y->left), 
+                            height(y->right)); 
+        return y;
     }
 
     Node* leftRotate(Node* x) {
+        //rotation
+        Node* temp = x;
+        x = x->right;
+        temp->right = x->left;
+        x->left = temp;
+        //update height
+        x->left->height = 1 + std::max(height(x->left->left), 
+                    height(x->left->right)); 
+        x->height = 1 + std::max(height(x->left), 
+                            height(x->right)); 
         // TODO: Implement left rotation
-        return nullptr;
+        return x;
     }
 
     Node* insertRec(Node* node, int value) {
-        // TODO: Implement recursive AVL insert with balancing
-        return nullptr;
+        if (node == nullptr) {
+            return new Node(value);
+        }
+        node->height += 1;
+        if (value <= node->data) {
+            node->left = insertRec(node->left, value);
+        } else {
+            node->right = insertRec(node->right, value);
+        }
+        
+        return node;
     }
 
     void inorderRec(Node* node) {
-        // TODO: Implement recursive inorder traversal
+        if (node == nullptr) return;
+        inorderRec(node->left);
+        std::cout << node->data << " ";
+        inorderRec(node->right);
     }
 
     void clearRec(Node* node) {
-        // TODO: Implement recursive clear
+        if (node == nullptr) return;
+        clearRec(node->left);
+        clearRec(node->right);
+        delete node;
+    }
+    void printBFS(Node* node){
+        std::queue<Node*> qu;
+        qu.push(root);
+        int temp = root->height;
+    
+        while(!qu.empty()){
+            Node* current = qu.front();
+            qu.pop();
+            if (current == nullptr) continue;
+            if (height(current)!= temp){
+                std::cout << "\n";
+                temp = height(current);
+            }
+            
+            std::cout << current -> data << " ";
+
+            qu.push(current->left);
+            qu.push(current->right);
+        }
     }
 
 public:
@@ -162,19 +220,42 @@ public:
 
     ~AVLTree() {
         // TODO: Implement destructor
+        clearRec(root);
     }
 
     void insert(int value) {
-        // TODO: Implement insert
+        root = insertRec(root, value);
+        //std::  cout << "debug" << value << " " << getBalance(root)<< std::endl;
+        if (getBalance(root) > 0 && getBalance(root->left) > 0){
+            root = rightRotate(root);
+            //left left case
+        }else if (getBalance(root) > 0 && getBalance(root->left) < 0){
+            root-> left = leftRotate(root->left);
+            root = rightRotate(root);
+            //left right case
+        }else if (getBalance(root) < 0 && getBalance(root->right) < 0){
+            root = leftRotate(root);
+            //right right case;
+        }else if (getBalance(root) < 0 && getBalance(root->right) > 0){
+            root->right = rightRotate (root->right);
+            root = leftRotate(root);
+        }
+        //std::  cout << "debug" << value << " " << getBalance(root)<< std::endl;
+
     }
 
     void inorder() {
-        // TODO: Implement inorder traversal
+        inorderRec(root);
+        std::cout << "\n";
+    }
+
+    void printTree(){
+        printBFS(root);
     }
 
     bool isBalanced() {
         // TODO: Implement balance check
-        return false;
+        return !getBalance(root);
     }
 };
 
@@ -184,35 +265,36 @@ void testTrees() {
     BST bst;
     
     // Insert elements
-    bst.insert(50);
-    bst.insert(30);
-    bst.insert(70);
-    bst.insert(20);
-    bst.insert(40);
+    // bst.insert(50);
+    // bst.insert(30);
+    // bst.insert(70);
+    // bst.insert(20);
+    // bst.insert(40);
     
-    std::cout << "Inorder traversal: ";
-    bst.inorder();
+    // std::cout << "Inorder traversal: ";
+    // bst.inorder();
     
     // std::cout << "Search 30: " << (bst.search(30) ? "Found" : "Not found") << std::endl;
     // std::cout << "Search 90: " << (bst.search(90) ? "Found" : "Not found") << std::endl;
     
-    bst.remove(20);
-    std::cout << "After removing 30, inorder traversal: ";
-    bst.inorder();
+    // bst.remove(20);
+    // std::cout << "After removing 30, inorder traversal: ";
+    // bst.inorder();
 
-    // std::cout << "\nTesting AVL Tree:\n";
-    // AVLTree avl;
+    std::cout << "\nTesting AVL Tree:\n";
+    AVLTree avl;
     
     // // Insert elements that would cause rotations
-    // avl.insert(10);
-    // avl.insert(20);
-    // avl.insert(30);
-    // avl.insert(40);
-    // avl.insert(50);
-    // std::cout << "Inorder traversal: ";
-    // avl.inorder();
+    avl.insert(10);
+    avl.insert(20);
+    avl.insert(30);
+    avl.insert(40);
+    avl.insert(50);
+    std::cout << "Inorder traversal: ";
+    avl.inorder();
+    //avl.printTree();
     
-    // std::cout << "Is tree balanced? " << (avl.isBalanced() ? "Yes" : "No") << std::endl;
+    std::cout << "Is tree balanced? " << (avl.isBalanced() ? "Yes" : "No") << std::endl;
 }
 
 int main() {
