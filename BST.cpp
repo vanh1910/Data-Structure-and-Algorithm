@@ -264,22 +264,22 @@ void testTrees() {
     std::cout << "Testing Binary Search Tree:\n";
     BST bst;
     
-    // Insert elements
-    // bst.insert(50);
-    // bst.insert(30);
-    // bst.insert(70);
-    // bst.insert(20);
-    // bst.insert(40);
+    //Insert elements
+    bst.insert(50);
+    bst.insert(30);
+    bst.insert(70);
+    bst.insert(20);
+    bst.insert(40);
     
-    // std::cout << "Inorder traversal: ";
-    // bst.inorder();
+    std::cout << "Inorder traversal: ";
+    bst.inorder();
     
-    // std::cout << "Search 30: " << (bst.search(30) ? "Found" : "Not found") << std::endl;
-    // std::cout << "Search 90: " << (bst.search(90) ? "Found" : "Not found") << std::endl;
+    std::cout << "Search 30: " << (bst.search(30) ? "Found" : "Not found") << std::endl;
+    std::cout << "Search 90: " << (bst.search(90) ? "Found" : "Not found") << std::endl;
     
-    // bst.remove(20);
-    // std::cout << "After removing 30, inorder traversal: ";
-    // bst.inorder();
+    bst.remove(20);
+    std::cout << "After removing 30, inorder traversal: ";
+    bst.inorder();
 
     std::cout << "\nTesting AVL Tree:\n";
     AVLTree avl;
