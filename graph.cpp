@@ -8,6 +8,7 @@
 #include <queue>
 #include <stack>
 #include <stdexcept>
+#include <algorithm>
 
 //-------------------- GRAPH BASE CLASS --------------------
 class Graph
@@ -61,23 +62,15 @@ private:
 
 
 public:
-
-
-
     // Constructor: Initialize matrix with given size
     AdjacencyMatrixGraph(int vertices, bool isDirected = false) : Graph(vertices, isDirected)
     {
-        // TODO: Initialize the adjacency matrix
-        // Hint: Create a numVertices x numVertices matrix initialized with false
         matrix.assign(numVertices, std::vector<bool>(numVertices,false));
     }
 
     // Add an edge from source to destination
     void addEdge(int source, int destination) override
     {
-        // TODO: Add an edge from source to destination
-        // If the graph is undirected, also add an edge from destination to source
-        // Validate that source and destination are within bounds
         if (!withInBounds(source, destination)){
             throw "out of bounds";
             return;
@@ -89,8 +82,6 @@ public:
     // Check if there is an edge from source to destination
     bool hasEdge(int source, int destination) const override
     {
-        // TODO: Check if there is an edge from source to destination
-        // Return false if source or destination is out of bounds
         if (!withInBounds(source, destination)) return false;
         return matrix[source][destination];
     }
@@ -99,25 +90,16 @@ public:
     std::vector<int> getNeighbors(int vertex) const override
     {
         if (!withInBounds(vertex)) throw "out of bounds";
-        // TODO: Return a vector containing all vertices that are adjacent to the given vertex
-        // Return empty vector if vertex is out of bounds
         std::vector<int> neighbors;
         for (int i = 0; i < numVertices; ++i){
             if (hasEdge(vertex, i)) neighbors.push_back(i);
         }
-        return neighbors; // Placeholder
+        return neighbors;
     }
 
     // Print the adjacency matrix
     void printGraph() const override
     {
-        // TODO: Print the adjacency matrix in a readable format
-        // Example:
-        //   0 1 2 3
-        // 0 0 1 0 0
-        // 1 1 0 1 0
-        // 2 0 1 0 1
-        // 3 0 0 1 0
         std::cout << "  ";
         for (int i = 0; i < numVertices; ++i){
             std::cout << i << " ";
@@ -212,16 +194,32 @@ public:
 //-------------------- GRAPH TRAVERSAL ALGORITHMS --------------------
 class GraphAlgorithms
 {
+private:
+    static void DFSFindConnectedGraph(bool visited[], int  u, const Graph &graph){
+        visited[u] = true;
+        std::vector<int> neighbors = graph.getNeighbors(u);
+        for (int i : neighbors){
+            if (!visited[i]){
+                DFSFindConnectedGraph(visited, i, graph);
+            }
+        }
+    }
+
+    static void topoDFS(bool visited[], int u, std::stack<int> &finishOrder, const Graph &graph){
+        visited[u] = true;
+        std::vector<int> neighbors = graph.getNeighbors(u);
+        for (int i : neighbors){
+            if (!visited[i]){
+                topoDFS(visited, i, finishOrder, graph);
+            }
+        }
+        finishOrder.push(u);
+    }
+
 public:
     // Depth-First Search (DFS) implementation
     static void DFS(const Graph &graph, int startVertex, std::vector<bool> &visited)
     {
-        // TODO: Implement DFS
-        // 1. Mark startVertex as visited
-        // 2. For each unvisited neighbor of startVertex, recursively call DFS
-
-        // Hint: Use the following structure
-        
         visited[startVertex] = true;
         std::cout << "Visited vertex: " << startVertex << std::endl;
 
@@ -280,38 +278,80 @@ public:
     // Find connected components in an undirected graph
     static int findConnectedComponents(const Graph &graph)
     {   
-
-        // TODO: Implement connected components finder
-        // 1. Initialize all vertices as unvisited
-        // 2. For each unvisited vertex, run DFS and count it as a new component
-        // 3. Return the total count of components
-
-        return 0; // Placeholder
+        int connectedComponents = 0;
+        int numVertices = graph.getNumVertices();
+        bool visited[numVertices] = {false};
+        for (int i = 0; i < numVertices; ++i){
+            if (!visited[i]){
+                connectedComponents++;
+                GraphAlgorithms::DFSFindConnectedGraph(visited, i, graph);
+            }
+        }
+        return connectedComponents; 
     }
 
     // Check if a graph is bipartite
     static bool isBipartite(const Graph &graph)
     {
-        // TODO: Implement bipartite check using BFS
-        // 1. Initialize all vertices with no color (-1)
-        // 2. Start BFS from any vertex, coloring it with 0
-        // 3. For each neighbor, color it with the opposite color (1-color)
-        // 4. If any adjacent vertices have the same color, return false
-        // 5. If all vertices can be colored without conflicts, return true
+        int numVertices = graph.getNumVertices();
+        int color[numVertices];
+        for (int i = 0; i < numVertices; ++i){
+            color[i] = -1;
+        }
+        std::queue<int> bfsQueue;
+        for (int i = 0; i < numVertices; ++i){
+            if (color[i] == -1){
+                color[i] = 0;
+                bfsQueue.push(i);
+                while (!bfsQueue.empty()){
+                    int vertex = bfsQueue.front();
+                    bfsQueue.pop();
+                    for (int &j : graph.getNeighbors(vertex)){
+                        if (color[j] == -1){
+                            color[j] = 1 - color[vertex];
+                            bfsQueue.push(j);
+                        } else if (color[j] == color[vertex]){
+                            return false;
+                        }
+                    }
+                }
+            }
+        }
 
-        return false; // Placeholder
+        return true; 
     }
-
+ 
     // Find shortest path between two vertices (unweighted graph)
     static std::vector<int> findShortestPath(const Graph &graph, int startVertex, int endVertex)
     {
-        // TODO: Implement shortest path finder using BFS
-        // 1. Run BFS from startVertex
-        // 2. Keep track of parent/previous vertex for each visited vertex
-        // 3. Once endVertex is reached, reconstruct the path by following parents backwards
-        // 4. Return the path (or empty vector if no path exists)
-
-        return {}; // Placeholder
+        std::vector<int> path;
+        std::queue<int> bfsQueue;
+        int numVertices = graph.getNumVertices();
+        int parent[numVertices];
+        bool visited[numVertices] = {false};
+        for (int i = 0; i < numVertices; ++i){
+            parent[i] = -1;
+        }
+        visited[startVertex] = true;
+        bfsQueue.push(startVertex);
+        while (!bfsQueue.empty()){
+            int vertex = bfsQueue.front();
+            bfsQueue.pop();
+            if (vertex == endVertex) break;
+            for (int &i : graph.getNeighbors(vertex)){
+                if (!visited[i]){
+                    visited[i] = true;
+                    parent[i] = vertex;
+                    bfsQueue.push(i);
+                }
+            }
+        }
+        if (parent[endVertex] == -1) return path; // No path found
+        for (int i = endVertex; i != -1; i = parent[i]){
+            path.push_back(i);
+        }
+        std::reverse(path.begin(), path.end());
+        return path;
     }
 
     // Topological sort (for directed acyclic graphs)
@@ -321,8 +361,20 @@ public:
         // 1. Run DFS on each unvisited vertex
         // 2. After exploring all neighbors of a vertex, add it to the front of the result list
         // 3. Return the result list (in reverse order of completion time)
-
-        return {}; // Placeholder
+        std::vector<int> result;
+        std::stack<int> finishOrder;
+        int numVertices = graph.getNumVertices();
+        bool visited[numVertices] = {false};
+        for (int i = 0; i < graph.getNumVertices(); ++i){
+            if (!visited[i]){
+                GraphAlgorithms::topoDFS(visited, i, finishOrder, graph);
+            }
+        }
+        while (!finishOrder.empty()){
+            result.push_back(finishOrder.top());
+            finishOrder.pop();
+        }
+        return result;
     }
     // Helper function for first DFS pass in Kosaraju's algorithm
     static void kosarajuFirstDFS(const Graph &graph, int vertex, std::vector<bool> &visited,
@@ -333,7 +385,15 @@ public:
         // 2. Recursively visit all unvisited neighbors
         // 3. After processing all neighbors, push current vertex to finishOrder stack
         // (This creates a stack with vertices ordered by decreasing finish time)
-    }
+        visited[vertex] = true;
+        std::vector<int> neighbors = graph.getNeighbors(vertex);
+        for (int &i : neighbors){
+            if (!visited[i]){
+                GraphAlgorithms::kosarajuFirstDFS(graph, i, visited, finishOrder);
+            }
+        }
+        finishOrder.push(vertex);
+    }   
 
     // Helper function for second DFS pass in Kosaraju's algorithm
     static void kosarajuSecondDFS(const Graph &graph, int vertex, std::vector<bool> &visited,
@@ -344,6 +404,15 @@ public:
         // 2. Add current vertex to the current component
         // 3. Recursively visit all unvisited neighbors
         // (This identifies vertices in the current strongly connected component)
+        visited[vertex] = true;
+        component.push_back(vertex);
+        std::vector<int> neighbors = graph.getNeighbors(vertex);
+        for (int &i : neighbors){
+            if (!visited[i]){
+                GraphAlgorithms::kosarajuSecondDFS(graph, i, visited, component);
+            }
+        }
+
     }
 
     // Find strongly connected components using Kosaraju's algorithm
@@ -361,8 +430,36 @@ public:
         //    b. For each unvisited vertex, run kosarajuSecondDFS to find a component
         //    c. Add each component to the result
         // 5. Return the list of strongly connected components
-
-        return {}; // Placeholder
+        int numVertices = graph.getNumVertices();
+        std::stack<int> finishOrder;
+        std::vector<bool> visited(numVertices, false);
+        std::vector<std::vector<int>> components;
+        
+        for (int i = 0; i < numVertices; ++i){
+            if (!visited[i]){
+                GraphAlgorithms::kosarajuFirstDFS(graph, i, visited, finishOrder);
+            }
+        }
+        // Create a reversed graph
+        AdjacencyListGraph reversedGraph(numVertices, true);
+        for (int i = 0; i < numVertices; ++i){
+            std::vector<int> neighbors = graph.getNeighbors(i);
+            for (int &j : neighbors){
+                reversedGraph.addEdge(j, i);
+            }
+        }
+        // Second DFS pass on the reversed graph
+        std::fill(visited.begin(), visited.end(), false);
+        while (!finishOrder.empty()){
+            int vertex = finishOrder.top();
+            finishOrder.pop();
+            if (!visited[vertex]){
+                std::vector<int> component;
+                GraphAlgorithms::kosarajuSecondDFS(reversedGraph, vertex, visited, component);
+                components.push_back(component);
+            }
+        }
+        return components;
     }
 };
 
@@ -374,13 +471,13 @@ void testGraphImplementations()
     AdjacencyMatrixGraph matrixGraph(5);
 
     // Add edges
-    matrixGraph.addEdge(0, 1);
+    //matrixGraph.addEdge(0, 1);
     matrixGraph.addEdge(0, 4);
-    matrixGraph.addEdge(1, 2);
+    //matrixGraph.addEdge(1, 2);
     matrixGraph.addEdge(1, 3);
     matrixGraph.addEdge(1, 4);
     matrixGraph.addEdge(2, 3);
-    matrixGraph.addEdge(3, 4);
+    //matrixGraph.addEdge(3, 4);
 
     // Print the graph
     std::cout << "Adjacency Matrix:\n";
@@ -457,6 +554,7 @@ void testGraphImplementations()
         std::cout << vertex << " ";
     }
     std::cout << std::endl;
+
     // Test Strongly Connected Components (using directed graph)
     std::cout << "\n======= Testing Strongly Connected Components =======\n";
     AdjacencyListGraph sccGraph(8, true);
