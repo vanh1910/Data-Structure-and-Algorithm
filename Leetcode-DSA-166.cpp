@@ -1,34 +1,56 @@
 #include<bits/stdc++.h>
-using namespace std;
 
+// This is not final solution, but leetcode have different output with local and codeforces, will finish later
 
 class Solution {
 public:
-    int minimumTotal(vector<vector<int>>& triangle) {
-        int n = triangle.size();
-        int dp[n][n];
-        int ans = INT_MAX;
-        dp[0][0] = triangle[0][0];
-        for (int i = 1; i < n; ++i){
-            for (int j = 0; j <= i; +j){
-                dp[i][j] = triangle[i][j] + min(dp[i-1][j-1], dp[i-1][j]);
-                if (i == n - 1){
-                    ans = max(ans, dp[i][j]);
-                }
+    std::string fractionToDecimal(int numerator, int denominator) {
+        int n = numerator, d = denominator;
+        int x = n;
+        std::string s,f;
+
+        std::unordered_map<int,int> m;
+
+        s.push_back('0' + n/d);
+        if (n % d == 0){
+            return s;
+        }
+        x = n % d; 
+        s.push_back('.');
+        m[0] = 1;
+        m[n] = 1;
+
+        while (true){
+            m[x] = 1;
+            f.push_back(char ('0'  + (x * 10 / d)));
+            
+            x = x * 10 % d;
+            if (m[x] == 1){
+                break;
             }
         }
-        return ans;
+
+
+        if (x != 0){
+            x = x*10 / d;
+            for (char i; i < f.length(); i++){
+                if (x == f[i] - '0'){
+                    s.push_back('(');
+                }
+                s.push_back(f[i]);
+            }
+            s.push_back(')');
+        }else{
+            s = s + f;
+        }
+        return s;
     }
 };
 
+
 int main(){
-    int n; cin >> n;
-    vector<vector<int>> tri (n,vector<int> (n,0));
-    for (int i = 0; i < n; ++i){
-        for (int j = 0; j <= i; ++j){
-            cin >> tri[i][j];
-        }
-    }
-    Solution sol;
-    cout << sol.minimumTotal(tri);
+    Solution sol ;
+    int n, d; std:: cin >> n >> d;
+    std :: cout << sol.fractionToDecimal(n,d);
+
 }
