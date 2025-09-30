@@ -1,6 +1,8 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+//I tried O(n) but suffering with modulo
+
 class Solution {
 public:
     int triangularSum(vector<int>& nums) {
