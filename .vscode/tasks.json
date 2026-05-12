@@ -1,0 +1,27 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Build and Run Active C++ File",
+      "type": "shell",
+      "command": "mkdir -p bin && g++ -std=c++17 -O2 -Wall -Wextra -o \"${workspaceFolder}/bin/${fileBasenameNoExtension}\" \"${file}\" && \"${workspaceFolder}/bin/${fileBasenameNoExtension}\" < \"${workspaceFolder}/inputf.in\" > \"${workspaceFolder}/outputf.out\"",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "presentation": {
+        "echo": true,
+        "reveal": "never",
+        "focus": false,
+        "panel": "shared",
+        "clear": true
+      }
+    }
+  ]
+}
