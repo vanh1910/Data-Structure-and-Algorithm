@@ -1,5 +1,4 @@
 *.exe
-.vscode
 .gitignore
 inputf.in
 outputf.out
